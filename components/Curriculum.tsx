@@ -401,12 +401,6 @@ const subjectsData: Record<string, Subject[]> = {
         ]
       }
     },
-  ],
-  "5º": [
-    { name: "Segurança da Informação", icon: <Monitor size={24} /> },
-    { name: "Governança de TI", icon: <Briefcase size={24} /> },
-    { name: "Inteligência Artificial", icon: <Cpu size={24} /> },
-    { name: "Tópicos Especiais em Informática", icon: <Lightbulb size={24} /> },
   ]
 };
 
