@@ -40,7 +40,7 @@ interface Subject {
   details?: SubjectDetail;
 }
 
-// Dados das matérias (MANTIDOS IGUAIS, SEM ALTERAÇÃO NOS DADOS)
+// Dados das matérias
 const subjectsData: Record<string, Subject[]> = {
   "4º": [
     { 
@@ -69,7 +69,7 @@ const subjectsData: Record<string, Subject[]> = {
           {
             title: "Repositório Oficial ScanPlant",
             description: "Acesse o código fonte completo do projeto, demonstrando a integração entre Front-end e Back-end e o uso de boas práticas de versionamento.",
-            tags: ["Git", "GitHub", "Full Stack", "Mobile"],
+            tags: ["Git", "GitHub", "Full Stack", "Mobile", "Frontend Mobile", "Backend API", "Database"],
             links: [
               { label: "Acessar Repositório no GitHub", url: "https://github.com/samuel05015/ScanPlant" }
             ]

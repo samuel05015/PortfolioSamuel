@@ -84,10 +84,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenYear }) => {
           <div className="h-6 w-px bg-white/20 mx-2" />
 
           <div className="flex gap-4">
-            <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-white transition-colors">
+            <a href="https://github.com/samuel05015" target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-white transition-colors">
               <Github size={20} />
             </a>
-            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-white transition-colors">
+            <a href="https://www.linkedin.com/in/samuel-henrique-92b1a3278" target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-white transition-colors">
               <Linkedin size={20} />
             </a>
           </div>
@@ -123,8 +123,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenYear }) => {
                 </a>
               ))}
               <div className="flex gap-4 mt-4 pt-4 border-t border-white/10">
-                <a href="#" className="text-slate-300 hover:text-white"><Github /></a>
-                <a href="#" className="text-slate-300 hover:text-white"><Linkedin /></a>
+                <a href="https://github.com/samuel05015" target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-white"><Github /></a>
+                <a href="https://www.linkedin.com/in/samuel-henrique-92b1a3278" target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-white"><Linkedin /></a>
               </div>
             </div>
           </motion.div>

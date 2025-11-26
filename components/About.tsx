@@ -35,13 +35,15 @@ export const About: React.FC = () => {
 
             <div className="mt-8 flex gap-4">
               {[
-                { icon: <Linkedin size={24} />, href: "https://linkedin.com" },
-                { icon: <Github size={24} />, href: "https://github.com" },
-                { icon: <Instagram size={24} />, href: "https://instagram.com" },
+                { icon: <Linkedin size={24} />, href: "https://www.linkedin.com/in/samuel-henrique-92b1a3278" },
+                { icon: <Github size={24} />, href: "https://github.com/samuel05015" },
+                { icon: <Instagram size={24} />, href: "https://www.instagram.com/samu_henrique.cp/?next=%2F" },
               ].map((social, index) => (
                 <a 
                   key={index}
                   href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 transition-all"
                 >
                   {social.icon}
@@ -51,7 +53,12 @@ export const About: React.FC = () => {
 
             <div className="mt-12">
               <h4 className="text-2xl font-bold text-white mb-6">Meus Projetos</h4>
-              <div className="p-6 rounded-2xl bg-surface border border-white/10 hover:border-primary/50 transition-colors group cursor-pointer">
+              <a 
+                href="https://github.com/samuel05015?tab=repositories"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block p-6 rounded-2xl bg-surface border border-white/10 hover:border-primary/50 transition-colors group cursor-pointer"
+              >
                 <div className="flex justify-between items-start mb-4">
                   <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
                     <Github size={24} />
@@ -65,7 +72,7 @@ export const About: React.FC = () => {
                 <span className="text-primary font-medium text-sm flex items-center gap-1 group-hover:gap-2 transition-all">
                   Ver todos os projetos <ArrowRightSmall />
                 </span>
-              </div>
+              </a>
             </div>
           </motion.div>
 

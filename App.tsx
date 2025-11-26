@@ -4,6 +4,7 @@ import { Hero } from './components/Hero';
 import { About } from './components/About';
 import { Skills } from './components/Skills';
 import { Curriculum } from './components/Curriculum';
+import { Contact } from './components/Contact';
 import { Footer } from './components/Footer';
 
 function App() {
@@ -38,16 +39,7 @@ function App() {
           externalSelectedYear={selectedYear} 
           onYearChange={setSelectedYear} 
         />
-        {/* Placeholder for Contact section referenced in nav */}
-        <section id="contact" className="py-24 container mx-auto px-6 text-center border-t border-white/5">
-           <h2 className="text-3xl font-bold text-white mb-6">Vamos Conversar?</h2>
-           <p className="text-slate-400 mb-8 max-w-xl mx-auto">
-             Estou sempre aberto a novas oportunidades e parcerias. Sinta-se à vontade para entrar em contato.
-           </p>
-           <a href="mailto:sh05015130405@gmail.com" className="text-primary hover:text-white underline text-lg transition-colors">
-             sh05015130405@gmail.com
-           </a>
-        </section>
+        <Contact />
       </main>
       <Footer />
     </div>
