@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence, useMotionTemplate, useMotionValue } from 'framer-motion';
 import { 
   Database, 
   Layout, 
@@ -40,7 +40,7 @@ interface Subject {
   details?: SubjectDetail;
 }
 
-// Dados das matérias
+// Dados das matérias (Mantidos os mesmos)
 const subjectsData: Record<string, Subject[]> = {
   "4º": [
     { 
@@ -410,6 +410,48 @@ const subjectsData: Record<string, Subject[]> = {
   ]
 };
 
+// --- SPOTLIGHT EFFECT COMPONENT ---
+interface SpotlightCardProps {
+  children: React.ReactNode;
+  className?: string;
+  onClick?: () => void;
+}
+
+const SpotlightCard: React.FC<SpotlightCardProps> = ({ children, className = "", onClick }) => {
+  const divRef = useRef<HTMLDivElement>(null);
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const handleMouseMove = ({ currentTarget, clientX, clientY }: React.MouseEvent) => {
+    const { left, top } = currentTarget.getBoundingClientRect();
+    mouseX.set(clientX - left);
+    mouseY.set(clientY - top);
+  };
+
+  return (
+    <div
+      ref={divRef}
+      className={`relative border border-white/10 overflow-hidden group ${className}`}
+      onMouseMove={handleMouseMove}
+      onClick={onClick}
+    >
+      <motion.div
+        className="pointer-events-none absolute -inset-px rounded-xl opacity-0 transition duration-300 group-hover:opacity-100"
+        style={{
+          background: useMotionTemplate`
+            radial-gradient(
+              650px circle at ${mouseX}px ${mouseY}px,
+              rgba(99, 102, 241, 0.15),
+              transparent 80%
+            )
+          `,
+        }}
+      />
+      <div className="relative h-full">{children}</div>
+    </div>
+  );
+};
+
 interface CurriculumProps {
   externalSelectedYear: string | null;
   onYearChange: (year: string | null) => void;
@@ -418,7 +460,6 @@ interface CurriculumProps {
 export const Curriculum: React.FC<CurriculumProps> = ({ externalSelectedYear, onYearChange }) => {
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
 
-  // Sync internal modal state with external prop from Navbar
   useEffect(() => {
     if (!externalSelectedYear) {
       setSelectedSubject(null);
@@ -476,83 +517,83 @@ export const Curriculum: React.FC<CurriculumProps> = ({ externalSelectedYear, on
         </div>
       </div>
 
-      {/* Modal / Overlay Principal */}
+      {/* MODAL FULL SCREEN */}
       <AnimatePresence>
         {externalSelectedYear && (
           <motion.div 
-            initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
-            animate={{ opacity: 1, backdropFilter: "blur(12px)" }}
-            exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
-            className="fixed inset-0 z-[60] bg-dark/95 overflow-y-auto"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[60] bg-dark/95 backdrop-blur-md overflow-y-auto"
           >
-            <div className="min-h-screen container mx-auto px-6 py-12 relative">
+             {/* Tech Grid Background inside Modal */}
+             <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+
+            <div className="min-h-screen container mx-auto px-6 py-12 relative z-10">
               {/* Header do Modal */}
-              <div className="flex justify-between items-center mb-8 sticky top-0 bg-dark/90 backdrop-blur-md py-4 z-20 border-b border-white/5">
-                <div className="flex items-center gap-4">
+              <div className="flex justify-between items-center mb-8 sticky top-0 z-20">
+                <div className="flex items-center gap-4 bg-dark/50 backdrop-blur-md p-2 pr-6 rounded-full border border-white/5">
                   {selectedSubject && (
                     <button 
                       onClick={handleBackToGrid}
-                      className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-white transition-colors mr-2"
+                      className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
                     >
                       <ArrowLeft size={20} />
                     </button>
                   )}
                   <div>
-                    <h3 className="text-2xl md:text-3xl font-bold text-white">
-                      {selectedSubject ? selectedSubject.name : `Matérias do ${externalSelectedYear} Ano`}
+                    <h3 className="text-xl md:text-2xl font-bold text-white">
+                      {selectedSubject ? selectedSubject.name : `${externalSelectedYear} Ano`}
                     </h3>
-                    <p className="text-slate-400 text-sm md:text-base">
-                      {selectedSubject ? "Detalhes da disciplina" : "Grade curricular detalhada"}
-                    </p>
                   </div>
                 </div>
                 <button 
                   onClick={handleClose}
-                  className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+                  className="p-3 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-500 transition-colors border border-red-500/20"
                 >
                   <X size={24} />
                 </button>
               </div>
 
-              {/* Conteúdo Dinâmico: Lista ou Detalhes */}
+              {/* Conteúdo Dinâmico */}
               <div className="relative">
                 <AnimatePresence mode="wait">
                   {!selectedSubject ? (
-                    /* VIEW 1: Grid de Matérias */
+                    /* VIEW 1: Grid de Matérias com Spotlight */
                     <motion.div
                       key="grid"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -20 }}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
                       className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-12"
                     >
                       {subjectsData[externalSelectedYear]?.map((subject, index) => (
-                        <motion.div
+                        <SpotlightCard
                           key={index}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.05 }}
                           onClick={() => setSelectedSubject(subject)}
-                          className="group relative p-6 rounded-2xl bg-white/5 border border-white/10 hover:border-primary/50 hover:bg-white/10 transition-all duration-300 flex flex-col items-start gap-4 cursor-pointer"
+                          className="bg-surface/50 rounded-2xl p-6 cursor-pointer hover:bg-surface/80 transition-colors"
                         >
-                          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center text-primary group-hover:text-white group-hover:from-primary group-hover:to-secondary transition-all duration-300 shadow-lg shadow-primary/5">
-                            {subject.icon}
+                          <div className="flex flex-col h-full gap-4">
+                            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center text-primary shadow-inner border border-white/5">
+                              {subject.icon}
+                            </div>
+                            <div>
+                              <h4 className="text-xl font-bold text-slate-100 leading-tight mb-2">
+                                {subject.name}
+                              </h4>
+                              {subject.details && (
+                                  <div className="flex items-center gap-2 text-primary/80 text-sm font-medium">
+                                    <span>Ver detalhes</span> <ArrowLeft size={14} className="rotate-180" />
+                                  </div>
+                              )}
+                            </div>
                           </div>
-                          <div>
-                            <h4 className="text-lg font-bold text-slate-100 group-hover:text-white leading-tight">
-                              {subject.name}
-                            </h4>
-                            {subject.details && (
-                                <p className="text-xs text-primary mt-2 font-medium">Clique para ver detalhes</p>
-                            )}
-                          </div>
-                          {/* Efeito de brilho no hover */}
-                          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transform -translate-x-full group-hover:translate-x-full transition-all duration-700 pointer-events-none" />
-                        </motion.div>
+                        </SpotlightCard>
                       ))}
                     </motion.div>
                   ) : (
-                    /* VIEW 2: Detalhes da Matéria */
+                    /* VIEW 2: Detalhes da Matéria - Master Detail Layout */
                     <SubjectDetailView subject={selectedSubject} />
                   )}
                 </AnimatePresence>
@@ -565,120 +606,128 @@ export const Curriculum: React.FC<CurriculumProps> = ({ externalSelectedYear, on
   );
 };
 
-// Componente para exibir os detalhes da matéria
+// Componente para exibir os detalhes da matéria (Novo Layout)
 const SubjectDetailView: React.FC<{ subject: Subject }> = ({ subject }) => {
   const details = subject.details;
 
-  if (!details) {
-    return (
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center py-20"
-      >
-        <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-500">
-          <Code2 size={40} />
-        </div>
-        <h3 className="text-2xl font-bold text-white mb-2">Conteúdo em breve</h3>
-        <p className="text-slate-400">Os detalhes desta disciplina estão sendo atualizados.</p>
-      </motion.div>
-    );
-  }
+  if (!details) return null;
 
   return (
     <motion.div
       key="details"
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 20 }}
-      className="max-w-4xl mx-auto space-y-8 pb-20"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="grid grid-cols-1 lg:grid-cols-12 gap-8 pb-20"
     >
-      {/* Header Description */}
-      <div className="p-8 rounded-2xl bg-gradient-to-br from-white/5 to-transparent border border-white/10">
-        <h4 className="text-xl font-bold text-primary mb-4">{details.title}</h4>
-        <p className="text-slate-300 leading-relaxed text-lg">{details.description}</p>
-      </div>
-
-      {/* Destaque (ScanPlant ou Boeing) */}
-      {details.highlight && (
-        <div className="p-1 rounded-2xl bg-gradient-to-r from-primary via-secondary to-primary bg-[length:200%_auto] animate-gradient">
-          <div className="bg-dark rounded-xl p-8 h-full">
-            <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
-               <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center text-primary shrink-0">
-                 {details.highlight.icon}
-               </div>
-               <div>
-                 <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-2xl font-bold text-white">{details.highlight.title}</h3>
-                    {details.title.includes("Projeto") && (
-                      <span className="px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-bold border border-primary/20">FULL STACK</span>
-                    )}
-                 </div>
-                 <p className="text-slate-300 leading-relaxed">
-                    {details.highlight.description}
-                 </p>
-                 {details.title.includes("Projeto") && (
-                   <div className="mt-4 flex gap-2">
-                      <span className="px-3 py-1 rounded bg-white/5 border border-white/10 text-xs text-slate-400">Frontend Mobile</span>
-                      <span className="px-3 py-1 rounded bg-white/5 border border-white/10 text-xs text-slate-400">Backend API</span>
-                      <span className="px-3 py-1 rounded bg-white/5 border border-white/10 text-xs text-slate-400">Database</span>
-                   </div>
-                 )}
-               </div>
-            </div>
+      {/* Coluna Esquerda: Resumo e Sticky Header */}
+      <div className="lg:col-span-4 space-y-6">
+        <div className="lg:sticky lg:top-32 p-6 rounded-2xl bg-surface/50 border border-white/10 backdrop-blur-sm">
+          <div className="w-16 h-16 rounded-2xl bg-primary/20 flex items-center justify-center text-primary mb-6">
+             {subject.icon}
+          </div>
+          <h4 className="text-2xl font-bold text-white mb-4">{details.title}</h4>
+          <p className="text-slate-400 leading-relaxed mb-6">{details.description}</p>
+          
+          <div className="h-px w-full bg-white/10 mb-6" />
+          
+          <div className="flex flex-col gap-2">
+             <div className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Neste Módulo</div>
+             {details.highlight && <div className="flex items-center gap-2 text-slate-300"><Trophy size={16} className="text-yellow-500" /> Destaque</div>}
+             {details.topics && <div className="flex items-center gap-2 text-slate-300"><CheckCircle2 size={16} className="text-green-500" /> {details.topics.length} Tópicos principais</div>}
+             {details.projects && <div className="flex items-center gap-2 text-slate-300"><Github size={16} className="text-white" /> {details.projects.length} Projetos práticos</div>}
           </div>
         </div>
-      )}
+      </div>
 
-      {/* Topics */}
-      <div className="grid md:grid-cols-2 gap-6">
-        {details.topics?.map((topic, i) => (
-          <div key={i} className="p-6 rounded-2xl bg-surface border border-white/10">
-            <h5 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-              <CheckCircle2 className="text-secondary" size={20} />
-              {topic.title}
-            </h5>
-            <ul className="space-y-3">
-              {topic.items.map((item, j) => (
-                <li key={j} className="text-slate-400 text-sm leading-relaxed pl-4 border-l-2 border-white/10">
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
+      {/* Coluna Direita: Conteúdo Detalhado */}
+      <div className="lg:col-span-8 space-y-8">
+        
+        {/* Destaque (ScanPlant ou Boeing) */}
+        {details.highlight && (
+          <SpotlightCard className="bg-gradient-to-br from-primary/10 to-transparent rounded-2xl p-8 border-primary/20">
+            <div className="flex flex-col md:flex-row gap-6 items-start md:items-center relative z-10">
+                <div className="p-4 rounded-full bg-primary/20 text-primary shrink-0 ring-4 ring-primary/5">
+                  {details.highlight.icon}
+                </div>
+                <div>
+                  <div className="flex flex-wrap items-center gap-3 mb-2">
+                    <h3 className="text-2xl font-bold text-white">{details.highlight.title}</h3>
+                    {details.title.includes("Projeto") && (
+                      <span className="px-3 py-1 rounded-full bg-primary text-white text-xs font-bold shadow-lg shadow-primary/25">FULL STACK</span>
+                    )}
+                  </div>
+                  <p className="text-slate-300 leading-relaxed text-lg">
+                    {details.highlight.description}
+                  </p>
+                  {details.title.includes("Projeto") && (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {["Frontend Mobile", "Backend API", "Database"].map(tag => (
+                        <span key={tag} className="px-3 py-1 rounded-md bg-dark border border-white/10 text-xs text-primary font-mono">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+            </div>
+          </SpotlightCard>
+        )}
+
+        {/* Topics */}
+        <div className="grid md:grid-cols-2 gap-6">
+          {details.topics?.map((topic, i) => (
+            <div key={i} className="p-6 rounded-2xl bg-surface border border-white/5 hover:border-white/10 transition-colors">
+              <h5 className="text-lg font-bold text-white mb-4 flex items-center gap-2 border-b border-white/5 pb-3">
+                <div className="w-2 h-2 rounded-full bg-secondary" />
+                {topic.title}
+              </h5>
+              <ul className="space-y-3">
+                {topic.items.map((item, j) => (
+                  <li key={j} className="text-slate-400 text-sm leading-relaxed pl-4 border-l border-white/10 hover:border-secondary/50 transition-colors">
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
 
         {/* Projects / Repos */}
         {details.projects?.map((project, i) => (
-          <div key={i} className="p-6 rounded-2xl bg-surface border border-white/10">
-            <h5 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-              <Github className="text-white" size={20} />
-              {project.title}
-            </h5>
-            <p className="text-slate-400 text-sm mb-4">{project.description}</p>
-            
-            <div className="flex flex-wrap gap-2 mb-6">
-              {project.tags.map((tag, t) => (
-                <span key={t} className="text-xs font-medium text-slate-500 bg-dark px-2 py-1 rounded">
-                  #{tag}
-                </span>
-              ))}
-            </div>
+           <div key={i} className="group relative p-8 rounded-2xl bg-dark border border-white/10 overflow-hidden">
+             <div className="absolute top-0 right-0 p-32 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-primary/10 transition-colors" />
+             
+             <div className="relative z-10">
+                <h5 className="text-xl font-bold text-white mb-2 flex items-center gap-3">
+                  <Github className="text-white" size={24} />
+                  {project.title}
+                </h5>
+                <p className="text-slate-400 mb-6">{project.description}</p>
+                
+                <div className="flex flex-wrap gap-2 mb-8">
+                  {project.tags.map((tag, t) => (
+                    <span key={t} className="text-xs font-medium text-slate-400 bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
 
-            <div className="space-y-2">
-              {project.links?.map((link, l) => (
-                <a 
-                  key={l}
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full text-center py-2 rounded-lg bg-white/5 hover:bg-primary hover:text-white border border-white/10 hover:border-primary transition-all text-sm font-medium text-slate-300"
-                >
-                  {link.label}
-                </a>
-              ))}
-            </div>
-          </div>
+                <div className="flex gap-4">
+                  {project.links?.map((link, l) => (
+                    <a 
+                      key={l}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-6 py-3 rounded-xl bg-white text-dark font-bold hover:bg-primary hover:text-white transition-all shadow-lg hover:shadow-primary/25"
+                    >
+                      {link.label}
+                    </a>
+                  ))}
+                </div>
+             </div>
+           </div>
         ))}
       </div>
     </motion.div>

@@ -4,7 +4,7 @@ import { Github, Linkedin, Instagram, ExternalLink } from 'lucide-react';
 
 export const About: React.FC = () => {
   return (
-    <section id="about" className="py-24 md:py-32 bg-dark relative">
+    <section id="about" className="py-24 md:py-32 bg-dark relative overflow-hidden">
       <div className="container mx-auto px-6">
         <div className="flex flex-col lg:flex-row items-center gap-16">
           
